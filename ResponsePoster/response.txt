@@ -1,0 +1,27 @@
+Beep Boop Bop, I'm a bot created to help you identify mold in your kombucha!
+
+&nbsp;
+
+Based on your image <imgUrl>, 
+
+&nbsp;
+
+ I predict this is **<Tag>** with a probability of **<prob>%**.
+
+&nbsp;
+
+You can call me to evaluate your image by Including my name in the this format **!KombuchMoldBot** 
+
+* in a comment with an image url (.jpg, .jpeg, .png).
+* or in the child of a comment with an image url
+* or in a top level comment on a post that links to a image
+
+Please upvote/downvote my responses to help train my models.
+
+***
+
+I'm built and run on Microsoft Azure PaaS and Azure Custom Computer Vision.  Find out more about me [here](http://empty)
+
+*id: <id>*
+
+*iteration: <iteration>*

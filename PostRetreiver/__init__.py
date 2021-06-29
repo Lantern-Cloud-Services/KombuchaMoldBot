@@ -40,9 +40,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     )    
     subreddit = reddit.subreddit(subReddToMonitor)
 
-    # example to get comment by id
-#    comment = reddit.comment("h3dghnm")
-
     for submission in subreddit.new(limit=postLimit):
         print("---------------------------------\n")
         print("Id: ", submission.id)
