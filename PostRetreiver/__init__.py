@@ -6,74 +6,80 @@ import calendar
 import time
 import requests
 import os
+import json
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
-    # app config
-    replyToTitles      = eval(os.environ["replyToTitles"])
-    titleSearchText    = os.environ["titleSearchText"]
-    replyToSelfText    = eval(os.environ["replyToSelfText"])
-    selfTextSearchText = os.environ["selfTextSearchText"]
-    replyToComments    = eval(os.environ["replyToComments"])
-    commentSearchText  = os.environ["commentSearchText"]
-    postLimit          = int(os.environ["postLimit"])
-    laEndpoint         = os.environ["laEndpoint"]
-
-    prevRepJson = ""
-    subReddToMonitor = ""
     try:
-        req_body = req.get_json()
-    except ValueError:
-        pass
-    else:
-        prevRepJson = req_body.get('prevReps')
-        subReddToMonitor = req_body.get('subreddit')
+        # app config
+        replyToTitles      = eval(os.environ["replyToTitles"])
+        titleSearchText    = os.environ["titleSearchText"]
+        replyToSelfText    = eval(os.environ["replyToSelfText"])
+        selfTextSearchText = os.environ["selfTextSearchText"]
+        replyToComments    = eval(os.environ["replyToComments"])
+        commentSearchText  = os.environ["commentSearchText"]
+        postLimit          = int(os.environ["postLimit"])
+        laEndpoint         = os.environ["laEndpoint"]
 
-    reddit = praw.Reddit(
-        client_id = os.environ["rclient_id"],
-        client_secret = os.environ["rclient_secret"],
-        username = os.environ["rusername"],
-        password = os.environ["rpassword"],
-        user_agent = os.environ["ruser_agent"],
-    )    
-    subreddit = reddit.subreddit(subReddToMonitor)
+        prevRepJson = ""
+        subReddToMonitor = ""
+        try:
+            req_body = req.get_json()
+        except ValueError:
+            pass
+        else:
+            prevRepJson = req_body.get('prevReps')
+            subReddToMonitor = req_body.get('subreddit')
 
-    for submission in subreddit.new(limit=postLimit):
-        print("---------------------------------\n")
-        print("Id: ", submission.id)
-        print("Url: ", submission.url)
-        print("Title: ", submission.title)
-        print("Text: ", submission.selftext)
-        print("Score: ", submission.score)
-        print(" ")
-       
-        postData = []
-        if replyToTitles:
-            postDatea = processReplyToTitle(titleSearchText, submission)
-            continue
+        reddit = praw.Reddit(
+            client_id = os.environ["rclient_id"],
+            client_secret = os.environ["rclient_secret"],
+            username = os.environ["rusername"],
+            password = os.environ["rpassword"],
+            user_agent = os.environ["ruser_agent"],
+        )    
+        subreddit = reddit.subreddit(subReddToMonitor)
 
-        if replyToSelfText:
-            postData = processReplyToSelftext(selfTextSearchText, submission)
-            continue
+        for submission in subreddit.new(limit=postLimit):
+            logging.info("---------------------------------\n")
+            logging.info("Id: " + submission.id)
+            logging.info("Url: " + submission.url)
+            logging.info("Title: " + submission.title)
+            logging.info("Text: " + submission.selftext)
+            logging.info("Score: " + str(submission.score))
+            logging.info(" ")
+        
+            postData = []
+            if replyToTitles:
+                postDatea = processReplyToTitle(titleSearchText, submission)
+                continue
 
-        if replyToComments:
-            repliedComments = []
-            if (prevRepJson != None):
-                for commentJson in prevRepJson:
-                    commentId = commentJson.get('commentId')
-                    if commentId != "":
-                        repliedComments.append(commentId)
+            if replyToSelfText:
+                postData = processReplyToSelftext(selfTextSearchText, submission)
+                continue
 
-            postData = processReplyToComment(commentSearchText, submission, repliedComments, subReddToMonitor)
-            continue
+            if replyToComments:
+                repliedComments = []
+                if (prevRepJson != None):
+                    for commentJson in prevRepJson:
+                        commentId = commentJson.get('commentId')
+                        if commentId != "":
+                            repliedComments.append(commentId)
 
-    # postData to LA
-    for data in postData:
-        print("Queueing data for process: " + data)
-        response = requests.post(laEndpoint, json=data)
-    
+                postData = processReplyToComment(commentSearchText, submission, repliedComments, subReddToMonitor)
+                continue
+
+        # postData to LA
+        for data in postData:
+            logging.info("Queueing data for process: \n" + json.dumps(data, indent=4, sort_keys=True))
+    #        response = requests.post(laEndpoint, json=data)
+
+    except Exception as exception:
+        logging.error("Error: " + str(exception))
+        raise exception
+
     return func.HttpResponse(
             "This HTTP triggered function executed successfully.",
             status_code=200
@@ -119,16 +125,16 @@ def processReplyToTitle(titleSearchText, submission):
             return createPostMetadata(submission.id, "title", "", submission.url)                    
         else:
             # no identified, reply to the post
-            print("Bot replying to title for post id: ", submission.id)
+            logging.info("Bot replying to title for post id: " + submission.id)
 
 # bot was called by selfText
 def processReplyToSelftext(selfTextSearchText, submission):
     if submission.selftext != ""  and re.search(selfTextSearchText, submission.selftext, re.IGNORECASE):
         if isImagePresent(submission.selftext):
-            print("Bot replying to selftext for post id: ", submission.id)
+            logging.info("Bot replying to selftext for post id: " + submission.id)
         else:
             # no identified, reply to the post
-            print("Bot replying to selftext for post id: ", submission.id)
+            logging.info("Bot replying to selftext for post id: " + submission.id)
 
 def processReplyToComment(commentSearchText, submission, repliedComments, subReddToMonitor):
     imageCommentMap = {}
@@ -144,7 +150,7 @@ def processReplyToComment(commentSearchText, submission, repliedComments, subRed
                 
             # Either initial comment contains an image
             if isImagePresent(comment.body):
-                print("Found image in comment with my name")
+                logging.info("Found image in comment with my name")
                 if (not repliedComments.__contains__(comment.id)):
                     #comment.reply("beep bop boop - checking image in parent comment")
                     imgUrl = parseImageURI(comment.body)
@@ -152,7 +158,7 @@ def processReplyToComment(commentSearchText, submission, repliedComments, subRed
 
             # Parent comment contains image
             elif(imageCommentMap.__contains__(comment.parent_id)):                
-                print("Found image in parent of comment with my name ")
+                logging.info("Found image in parent of comment with my name ")
                 if (not repliedComments.__contains__(comment.id)):
                     #comment.reply("beep bop boop - checking image in grandparent comment")
                     imgUrl = imageCommentMap[comment.parent_id]
@@ -160,12 +166,12 @@ def processReplyToComment(commentSearchText, submission, repliedComments, subRed
 
             # Post URL contains image
             elif (comment.depth == 0) and (isImagePresent(submission.url)):
-                print("Found image in url of post with comment that contains my name ")
+                logging.info("Found image in url of post with comment that contains my name ")
                 if (not repliedComments.__contains__(comment.id)):
                     #comment.reply("beep bop boop - checking image in post URL")
                     postReplyList.append(createPostMetadata(submission.id, "comment", comment.id, submission.url, subReddToMonitor))
 
-            print("Bot replying to post/comment id: ", submission.id + "/" + comment.id)
+            logging.info("Bot replying to post/comment id: " + submission.id + "/" + comment.id)
         else:
             if isImagePresent(comment.body):
                 parentId = "t" + str(comment.depth) + "_" + comment.id
@@ -175,5 +181,5 @@ def processReplyToComment(commentSearchText, submission, repliedComments, subRed
                 imgUrl = parseImageURI(comment.body)
                 imageCommentMap[parentId] = imgUrl
 
-    print("Comments Processed")
+    logging.info("Comments Processed")
     return postReplyList
