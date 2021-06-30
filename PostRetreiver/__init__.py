@@ -135,6 +135,9 @@ def processReplyToComment(commentSearchText, submission, repliedComments, subRed
 
     submission.comments.replace_more(limit=None)
     for comment in submission.comments.list():
+        if comment.author.name == "KombuchaMoldBot":
+            continue
+
         # bot was called by comment
         if comment.body != "" and re.search(commentSearchText, comment.body, re.IGNORECASE):
                 

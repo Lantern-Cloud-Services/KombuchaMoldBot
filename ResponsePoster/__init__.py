@@ -7,8 +7,6 @@ import os
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
-
-
     commentId = ""
     cvData    = ""
     imageURL  = ""
@@ -29,7 +27,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         user_agent = os.environ["ruser_agent"],
     )    
 
-
     predMap = {}
     pred = cvData.get('predictions')
     for predObj in pred:
@@ -44,17 +41,16 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     probRes = ""
     if (float(predMap["nomold"]) > float(predMap["mold"])):
         predRes = "Not Mold"
-        probRes = predMap["nomold"]
+        probRes = predMap["nomold"]*100
     else:
         predRes = "Mold"
-        probRes = predMap["mold"]
+        probRes = predMap["mold"]*100
 
 
     respStr = " Beep Boop Bop, I'm a bot created to help you identify mold in your kombucha! \n\n"
+#    respStr = respStr + "Based on your image " + imageURL + ", \n\n"
     respStr = respStr + "&nbsp; \n\n"
-    respStr = respStr + "Based on your image " + imageURL + ", \n\n"
-    respStr = respStr + "&nbsp; \n\n"
-    respStr = respStr + "I predict this is **" + predRes + "** with a probability of **" + str(probRes) + "**. \n\n"
+    respStr = respStr + "Based on your image, I predict this is **" + predRes + "** with a probability of **" + str(probRes) + "%**. \n\n"
     respStr = respStr + "&nbsp; \n\n"
     respStr = respStr + "You can call me to evaluate your image by Including my name in the this format **!KombuchMoldBot**  \n\n"
     respStr = respStr + "* in a comment with an image url (.jpg, .jpeg, .png).  \n"
