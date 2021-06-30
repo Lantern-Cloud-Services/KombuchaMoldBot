@@ -135,7 +135,7 @@ def processReplyToComment(commentSearchText, submission, repliedComments, subRed
 
     submission.comments.replace_more(limit=None)
     for comment in submission.comments.list():
-        if comment.author.name == "KombuchaMoldBot":
+        if comment.author == "KombuchaMoldBot":
             continue
 
         # bot was called by comment
