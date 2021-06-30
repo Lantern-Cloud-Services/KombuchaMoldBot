@@ -69,12 +69,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                             repliedComments.append(commentId)
 
                 postData = processReplyToComment(commentSearchText, submission, repliedComments, subReddToMonitor)
-                continue
 
-        # postData to LA
-        for data in postData:
-            logging.info("Queueing data for process: \n" + json.dumps(data, indent=4, sort_keys=True))
-            response = requests.post(laEndpoint, json=data)
+                # postData to LA
+                for data in postData:
+                    logging.info("Queueing data for process: \n" + json.dumps(data, indent=4, sort_keys=True))
+                    response = requests.post(laEndpoint, json=data)
+
+
 
     except Exception as exception:
         logging.error("Error: " + str(exception))
