@@ -71,6 +71,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     # postData to LA
     for data in postData:
+        print("Queueing data for process: " + data)
         response = requests.post(laEndpoint, json=data)
     
     return func.HttpResponse(
@@ -145,7 +146,7 @@ def processReplyToComment(commentSearchText, submission, repliedComments, subRed
             if isImagePresent(comment.body):
                 print("Found image in comment with my name")
                 if (not repliedComments.__contains__(comment.id)):
-                    comment.reply("beep bop boop - checking image in parent comment")
+                    #comment.reply("beep bop boop - checking image in parent comment")
                     imgUrl = parseImageURI(comment.body)
                     postReplyList.append(createPostMetadata(submission.id, "comment", comment.id, imgUrl, subReddToMonitor))
 
@@ -153,7 +154,7 @@ def processReplyToComment(commentSearchText, submission, repliedComments, subRed
             elif(imageCommentMap.__contains__(comment.parent_id)):                
                 print("Found image in parent of comment with my name ")
                 if (not repliedComments.__contains__(comment.id)):
-                    comment.reply("beep bop boop - checking image in grandparent comment")
+                    #comment.reply("beep bop boop - checking image in grandparent comment")
                     imgUrl = imageCommentMap[comment.parent_id]
                     postReplyList.append(createPostMetadata(submission.id, "comment", comment.id, imgUrl, subReddToMonitor))
 
@@ -161,7 +162,7 @@ def processReplyToComment(commentSearchText, submission, repliedComments, subRed
             elif (comment.depth == 0) and (isImagePresent(submission.url)):
                 print("Found image in url of post with comment that contains my name ")
                 if (not repliedComments.__contains__(comment.id)):
-                    comment.reply("beep bop boop - checking image in post URL")
+                    #comment.reply("beep bop boop - checking image in post URL")
                     postReplyList.append(createPostMetadata(submission.id, "comment", comment.id, submission.url, subReddToMonitor))
 
             print("Bot replying to post/comment id: ", submission.id + "/" + comment.id)
