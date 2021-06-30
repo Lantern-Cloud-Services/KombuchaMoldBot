@@ -74,7 +74,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         # postData to LA
         for data in postData:
             logging.info("Queueing data for process: \n" + json.dumps(data, indent=4, sort_keys=True))
-    #        response = requests.post(laEndpoint, json=data)
+            response = requests.post(laEndpoint, json=data)
 
     except Exception as exception:
         logging.error("Error: " + str(exception))
