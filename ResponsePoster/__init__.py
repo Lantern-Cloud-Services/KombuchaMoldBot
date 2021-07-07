@@ -53,7 +53,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     respStr = respStr + "Based on your image, I predict this is **" + predRes + "** with a probability of **" + str(probRes) + "%**. \n\n"
     respStr = respStr + "&nbsp; \n\n"
     respStr = respStr + "You can call me to evaluate your image by Including my name in the this format **!KombuchMoldBot**  \n\n"
-    respStr = respStr + "* in a comment with an image url (.jpg, .jpeg, .png).  \n"
+    respStr = respStr + "* in a comment with an image url (.jpg, .jpeg, .bmp).  \n"
     respStr = respStr + "* or in the child of a comment with an image url.  \n"
     respStr = respStr + "* or in a top level comment on a post that links to an image.  \n\n"
     respStr = respStr + "&nbsp; \n\n"
